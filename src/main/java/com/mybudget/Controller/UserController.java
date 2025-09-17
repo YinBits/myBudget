@@ -1,72 +1,46 @@
 package com.mybudget.Controller;
-import com.mybudget.Entity.User;
-import com.mybudget.Repository.UserRepository;
+
+import com.mybudget.DTOs.CreateUserDto;
+import com.mybudget.DTOs.LoginUserDto;
+import com.mybudget.DTOs.RecoveryJwtTokenDto;
+import com.mybudget.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Optional;
-
-
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/users")
 public class UserController {
 
     @Autowired
-    private UserRepository userRepository;
+    private UserService userService;
+
+    @PostMapping("/login")
+    public ResponseEntity<RecoveryJwtTokenDto> authenticateUser(@RequestBody LoginUserDto loginUserDto) {
+        RecoveryJwtTokenDto token = userService.authenticateUser(loginUserDto);
+        return new ResponseEntity<>(token, HttpStatus.OK);
+    }
 
     @PostMapping
-    public ResponseEntity<User> createUser(@RequestBody User user){
-        
-        if(user.getName() == null || user.getEmail() == null || user.getPassword() == null){
-            return ResponseEntity.badRequest().build();
-        }
-        System.out.println(user);
-        User savedUser = userRepository.save(user);
-        return ResponseEntity.ok(savedUser);
+    public ResponseEntity<Void> createUser(@RequestBody CreateUserDto createUserDto) {
+        userService.createUser(createUserDto);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<User> editUser(@PathVariable Long id, @RequestBody User updateUser){
-        Optional<User> existingUser = userRepository.findById(id);
-
-        if(existingUser.isPresent()){
-            User user = existingUser.get();
-            user.setName(updateUser.getName());
-            user.setEmail(updateUser.getEmail());
-            user.setPassword(updateUser.getPassword());
-            User savedUser = userRepository.save(user);
-            return ResponseEntity.ok(savedUser);
-        }else{
-            return ResponseEntity.notFound().build();
-        }
-
+    @GetMapping("/test")
+    public ResponseEntity<String> getAuthenticationTest() {
+        return new ResponseEntity<>("Autenticado com sucesso", HttpStatus.OK);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<User> getUser (@PathVariable Long id){
-        Optional<User>  existingUser = userRepository.findById(id);
-
-        if (existingUser.isPresent()) {
-            User user = existingUser.get();
-            return ResponseEntity.ok(user);
-        }else {
-            return ResponseEntity.notFound().build();
-        }
-
+    @GetMapping("/test/customer")
+    public ResponseEntity<String> getCustomerAuthenticationTest() {
+        return new ResponseEntity<>("Cliente autenticado com sucesso", HttpStatus.OK);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<User> deleteUser (@PathVariable Long id){
-        Optional<User> existingUser = userRepository.findById(id);
-
-        if (existingUser.isPresent()){
-            userRepository.deleteById(id); ;
-            return ResponseEntity.ok().build();
-        }else{
-            return  ResponseEntity.notFound().build();
-        }
-
-
+    @GetMapping("/test/administrator")
+    public ResponseEntity<String> getAdminAuthenticationTest() {
+        return new ResponseEntity<>("Administrador autenticado com sucesso", HttpStatus.OK);
     }
+
 }
