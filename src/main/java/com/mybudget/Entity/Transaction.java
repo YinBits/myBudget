@@ -5,6 +5,7 @@ import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jdk.jfr.Category;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -14,6 +15,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Transaction {
@@ -38,14 +40,5 @@ public class Transaction {
 //    @ManyToOne
 //    private Category category_id;
 //
-//    @ManyToOne
-//    private Account account;
-//
-//    @Enumerated(EnumType.STRING)
-//    private PaymentMethod paymentMethod;
-//
-//    private Boolean isRecurring;
-//
-//    private String recurrencePatern;
 
 }

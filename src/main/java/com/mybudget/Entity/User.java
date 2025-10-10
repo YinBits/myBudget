@@ -2,6 +2,8 @@ package com.mybudget.Entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.math.BigDecimal;
 import java.util.List;
 
 @Table(name = "users")
@@ -10,6 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @Getter
+@Setter
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,5 +34,8 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     private List<Role> roles;
+
+    @Column(nullable = false)
+    private BigDecimal budget = BigDecimal.ZERO;
 
 }

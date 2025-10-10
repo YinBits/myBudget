@@ -14,6 +14,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 
@@ -49,6 +50,7 @@ import java.util.List;
                     .email(createUserDto.email())
                     .password(securityConfiguration.passwordEncoder().encode(createUserDto.password()))
                     .roles(List.of(Role.builder().name(createUserDto.role()).build()))
+                    .budget(BigDecimal.valueOf(0))
                     .build();
 
        
