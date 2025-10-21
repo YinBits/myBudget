@@ -26,7 +26,8 @@ public class SecurityConfiguration {
     };
 
     public static final String [] ENDPOINTS_WITH_AUTHENTICATION_REQUIRED = {
-            "/transactions/**"
+            "/transactions/**",
+            "/reports/**"
     };
 
     public static final String [] ENDPOINTS_CUSTOMER = {
@@ -40,6 +41,7 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity
+                .cors(cors -> {})
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Stateless
                 .authorizeHttpRequests(auth -> auth

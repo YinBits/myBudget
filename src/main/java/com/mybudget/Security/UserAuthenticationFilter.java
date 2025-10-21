@@ -28,21 +28,44 @@ public class UserAuthenticationFilter extends OncePerRequestFilter {
     private UserRepository userRepository;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException{
-        if (checkIfEndpointsISNotPublic(request)){
-            String token = recoveryToken(request);
-            if(token != null){
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
+
+        String requestURI = request.getRequestURI();
+
+        // Se for rota pública, segue sem autenticar
+        if (Arrays.stream(SecurityConfiguration.ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED)
+                .anyMatch(requestURI::startsWith)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        // Recupera o token
+        String token = recoveryToken(request);
+
+        if (token != null) {
+            try {
                 String subject = jwtTokenService.getSubjectFromToken(token);
-                User user = userRepository.findByEmail(subject).get();
+
+                User user = userRepository.findByEmail(subject)
+                        .orElseThrow(() -> new RuntimeException("Usuário não encontrado para o token"));
+
                 UserDetailsImpl userDetails = new UserDetailsImpl(user);
 
-                Authentication authentication =
-                        new UsernamePasswordAuthenticationToken(userDetails.getUsername(), null, userDetails.getAuthorities());
+                Authentication authentication = new UsernamePasswordAuthenticationToken(
+                        userDetails, null, userDetails.getAuthorities()
+                );
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-            }else{
-                throw new RuntimeException("O token está ausente");
+
+            } catch (Exception e) {
+                System.out.println("❌ Erro na autenticação do token: " + e.getMessage());
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                return;
             }
+        } else {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return;
         }
 
         filterChain.doFilter(request, response);

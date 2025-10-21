@@ -11,8 +11,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
-import java.time.LocalDateTime;
-
+import java.time.LocalDate;
 @Entity
 @Data
 @Builder
@@ -31,7 +30,7 @@ public class Transaction {
     @Enumerated(EnumType.STRING)
     private TransactionType type;
 
-    private LocalDateTime date;
+    private LocalDate date;
 
     @ManyToOne
     @JoinColumn(name = "user_id")

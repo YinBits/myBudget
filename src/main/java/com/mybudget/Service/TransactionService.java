@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,7 +34,7 @@ public class TransactionService {
                 .type(createTransactionDto.type())
                 .description(createTransactionDto.description())
                 .amount(createTransactionDto.amount())
-                .date(createTransactionDto.date() != null ? createTransactionDto.date() : LocalDateTime.now())
+                .date(createTransactionDto.date() != null ? createTransactionDto.date() : LocalDate.now())
                 .user(user)
                 .build();
 
@@ -44,41 +44,37 @@ public class TransactionService {
         return mapToResponseDto(savedTransaction, user.getBudget());
     }
 
-    // READ - Buscar todas as transações do usuário
+    // READ - Todas transações
     public List<TransactionResponseDto> getUserTransactions() {
         User user = getAuthenticatedUser();
-        List<Transaction> transactions = transactionRepository.findByUserOrderByDateDesc(user);
-
-        return transactions.stream()
+        return transactionRepository.findByUserOrderByDateDesc(user)
+                .stream()
                 .map(transaction -> mapToResponseDto(transaction, user.getBudget()))
                 .collect(Collectors.toList());
     }
 
-    // READ - Buscar transação por ID
+    // READ - Por ID
     public TransactionResponseDto getTransactionById(Long id) {
         User user = getAuthenticatedUser();
         Transaction transaction = transactionRepository.findByIdAndUser(id, user)
                 .orElseThrow(() -> new RuntimeException("Transação não encontrada"));
-
         return mapToResponseDto(transaction, user.getBudget());
     }
 
-    // READ - Buscar transações por tipo
+    // READ - Por tipo
     public List<TransactionResponseDto> getTransactionsByType(TransactionType type) {
         User user = getAuthenticatedUser();
-        List<Transaction> transactions = transactionRepository.findByUserAndTypeOrderByDateDesc(user, type);
-
-        return transactions.stream()
+        return transactionRepository.findByUserAndTypeOrderByDateDesc(user, type)
+                .stream()
                 .map(transaction -> mapToResponseDto(transaction, user.getBudget()))
                 .collect(Collectors.toList());
     }
 
-    // READ - Buscar transações por período
-    public List<TransactionResponseDto> getTransactionsByPeriod(LocalDateTime start, LocalDateTime end) {
+    // READ - Por período
+    public List<TransactionResponseDto> getTransactionsByPeriod(LocalDate start, LocalDate end) {
         User user = getAuthenticatedUser();
-        List<Transaction> transactions = transactionRepository.findByUserAndDateBetweenOrderByDateDesc(user, start, end);
-
-        return transactions.stream()
+        return transactionRepository.findByUserAndDateBetweenOrderByDateDesc(user, start, end)
+                .stream()
                 .map(transaction -> mapToResponseDto(transaction, user.getBudget()))
                 .collect(Collectors.toList());
     }
@@ -90,24 +86,17 @@ public class TransactionService {
         Transaction transaction = transactionRepository.findByIdAndUser(id, user)
                 .orElseThrow(() -> new RuntimeException("Transação não encontrada"));
 
-        // Reverter o valor antigo do orçamento
         updateUserBudget(user, transaction.getType(), transaction.getAmount(), false);
 
-        // Atualizar campos
-        if (updateTransactionDto.description() != null) {
+        if (updateTransactionDto.description() != null)
             transaction.setDescription(updateTransactionDto.description());
-        }
-        if (updateTransactionDto.amount() != null) {
+        if (updateTransactionDto.amount() != null)
             transaction.setAmount(updateTransactionDto.amount());
-        }
-        if (updateTransactionDto.type() != null) {
+        if (updateTransactionDto.type() != null)
             transaction.setType(updateTransactionDto.type());
-        }
-        if (updateTransactionDto.date() != null) {
+        if (updateTransactionDto.date() != null)
             transaction.setDate(updateTransactionDto.date());
-        }
 
-        // Aplicar o novo valor ao orçamento
         updateUserBudget(user, transaction.getType(), transaction.getAmount(), true);
 
         Transaction updatedTransaction = transactionRepository.save(transaction);
@@ -123,14 +112,11 @@ public class TransactionService {
         Transaction transaction = transactionRepository.findByIdAndUser(id, user)
                 .orElseThrow(() -> new RuntimeException("Transação não encontrada"));
 
-        // Reverter o valor do orçamento
         updateUserBudget(user, transaction.getType(), transaction.getAmount(), false);
-
         transactionRepository.delete(transaction);
         userRepository.save(user);
     }
 
-    // Métodos auxiliares
     private User getAuthenticatedUser() {
         String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
         return userRepository.findByEmail(userEmail)
@@ -141,16 +127,11 @@ public class TransactionService {
         BigDecimal newBudget;
 
         if (type == TransactionType.INCOME) {
-            newBudget = isAdd ?
-                    user.getBudget().add(amount) :
-                    user.getBudget().subtract(amount);
-        } else { // EXPENSE
-            newBudget = isAdd ?
-                    user.getBudget().subtract(amount) :
-                    user.getBudget().add(amount);
+            newBudget = isAdd ? user.getBudget().add(amount) : user.getBudget().subtract(amount);
+        } else {
+            newBudget = isAdd ? user.getBudget().subtract(amount) : user.getBudget().add(amount);
         }
 
-        // Validar saldo para despesas
         if (newBudget.compareTo(BigDecimal.ZERO) < 0) {
             throw new RuntimeException("Saldo insuficiente para esta transação");
         }
@@ -169,12 +150,12 @@ public class TransactionService {
         );
     }
 
-    // Relatórios
+    // DASHBOARD - resumo mensal
     public TransactionSummaryDto getMonthlySummary(int year, int month) {
         User user = getAuthenticatedUser();
 
-        LocalDateTime start = LocalDateTime.of(year, month, 1, 0, 0);
-        LocalDateTime end = start.plusMonths(1).minusSeconds(1);
+        LocalDate start = LocalDate.of(year, month, 1);
+        LocalDate end = start.withDayOfMonth(start.lengthOfMonth());
 
         BigDecimal totalIncome = transactionRepository.sumAmountByUserAndTypeAndDateBetween(
                 user, TransactionType.INCOME, start, end);

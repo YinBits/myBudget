@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -16,11 +17,13 @@ import java.util.Optional;
 @Repository
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
 
+    List<Transaction> findByUserId(Long userId);
+
     List<Transaction> findByUserOrderByDateDesc(User user);
 
     List<Transaction> findByUserAndTypeOrderByDateDesc(User user, TransactionType type);
 
-    List<Transaction> findByUserAndDateBetweenOrderByDateDesc(User user, LocalDateTime start, LocalDateTime end);
+    List<Transaction> findByUserAndDateBetweenOrderByDateDesc(User user, LocalDate start, LocalDate end);
 
     Optional<Transaction> findByIdAndUser(Long id, User user);
 
@@ -28,5 +31,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
 
     @Query("SELECT COALESCE(SUM(t.amount), 0) FROM Transaction t WHERE t.user = :user AND t.type = :type AND t.date BETWEEN :start AND :end")
     BigDecimal sumAmountByUserAndTypeAndDateBetween(@Param("user") User user, @Param("type") TransactionType type,
-                                                    @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+                                                    @Param("start") LocalDate start, @Param("end") LocalDate end);
+
+    List<Transaction> findByUserIdAndDateBetween(Long userId, LocalDate startDate, LocalDate endDate);
 }
