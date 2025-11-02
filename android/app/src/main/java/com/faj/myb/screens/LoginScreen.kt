@@ -1,6 +1,7 @@
 package com.faj.myb.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -20,17 +21,26 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.faj.myb.NavHome
 import com.faj.myb.NavSignUp
 import com.faj.myb.viewmodel.LoginUiState
 import com.faj.myb.viewmodel.LoginViewModel
-
-data object NavLogin
 
 @Composable
 fun LoginScreen(backStack: SnapshotStateList<Any>, viewModel: LoginViewModel = viewModel()) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     val uiState by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(uiState) {
+        when(uiState) {
+            is LoginUiState.Success -> {
+                backStack.clear()
+                backStack.add(NavHome)
+            }
+            else -> Unit
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -152,9 +162,13 @@ fun LoginScreen(backStack: SnapshotStateList<Any>, viewModel: LoginViewModel = v
 
                 Row {
                     Text(text = "Não tem uma conta,")
-                    TextButton(onClick = { backStack.add(NavSignUp) }) {
-                        Text(text = "Registra-se")
-                    }
+                    Text(
+                        text = "Registra-se",
+                        color = Color.Blue,
+                        modifier = Modifier
+                            .padding(start = 4.dp)
+                            .clickable { backStack.add(NavSignUp) }
+                    )
                 }
             }
         }

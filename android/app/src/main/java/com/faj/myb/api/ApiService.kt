@@ -2,11 +2,14 @@ package com.faj.myb.api
 
 import com.faj.myb.api.request.LoginRequest
 import com.faj.myb.api.request.SignUpRequest
+import com.faj.myb.api.request.TransactionRequest
 import com.faj.myb.api.response.LoginResponse
+import com.faj.myb.api.response.TransactionResponse
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
+import retrofit2.http.GET
 import retrofit2.http.POST
 import java.util.concurrent.TimeUnit
 
@@ -16,6 +19,12 @@ interface ApiService {
 
     @POST("users")
     suspend fun register(@Body request: SignUpRequest)
+
+    @POST("transactions")
+    suspend fun addTransaction(@Body request: TransactionRequest)
+
+    @GET("transactions")
+    suspend fun getTransactions(): List<TransactionResponse>
 }
 
 object RetrofitInstance {
