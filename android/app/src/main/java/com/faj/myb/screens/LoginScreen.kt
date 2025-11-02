@@ -24,11 +24,13 @@ import com.faj.myb.NavSignUp
 import com.faj.myb.viewmodel.LoginUiState
 import com.faj.myb.viewmodel.LoginViewModel
 
+data object NavLogin
+
 @Composable
 fun LoginScreen(backStack: SnapshotStateList<Any>, viewModel: LoginViewModel = viewModel()) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    val uiState = viewModel.uiState
+    val uiState by viewModel.uiState.collectAsState()
 
     Box(
         modifier = Modifier
@@ -138,9 +140,10 @@ fun LoginScreen(backStack: SnapshotStateList<Any>, viewModel: LoginViewModel = v
                         Text(text = "Entrar", fontSize = 18.sp)
                     }
                 }
+
                 if (uiState is LoginUiState.Error) {
                     Text(
-                        text = uiState.message,
+                        text = (uiState as LoginUiState.Error).message,
                         color = MaterialTheme.colorScheme.error,
                         modifier = Modifier.padding(top = 8.dp)
                     )

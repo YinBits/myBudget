@@ -1,16 +1,13 @@
 package com.faj.myb.viewmodel
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.faj.myb.api.RetrofitInstance
 import com.faj.myb.api.request.LoginRequest
-import com.faj.myb.api.response.LoginResponse
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import retrofit2.Call
-import retrofit2.Response
 
 sealed interface LoginUiState {
     object Idle : LoginUiState
@@ -20,37 +17,19 @@ sealed interface LoginUiState {
 }
 
 class LoginViewModel : ViewModel() {
-    var uiState: LoginUiState by mutableStateOf(LoginUiState.Idle)
-        private set
+
+    private val _uiState = MutableStateFlow<LoginUiState>(LoginUiState.Idle)
+    val uiState = _uiState.asStateFlow()
 
     fun login(email: String, password: String) {
         viewModelScope.launch {
-            uiState = LoginUiState.Loading
+            _uiState.update { LoginUiState.Loading }
             try {
-                RetrofitInstance.api.login(LoginRequest(email, password))
-                    .enqueue(object : retrofit2.Callback<LoginResponse> {
-                        override fun onResponse(
-                            call: Call<LoginResponse?>,
-                            response: Response<LoginResponse?>
-                        ) {
-                            if (response.isSuccessful) {
-                                RetrofitInstance.token = response.body()?.token
-                                uiState = LoginUiState.Success
-                                return
-                            } else {
-                                uiState = LoginUiState.Error("Failed to login")
-                            }
-                        }
-
-                        override fun onFailure(
-                            call: Call<LoginResponse?>,
-                            t: Throwable
-                        ) {
-                            uiState = LoginUiState.Error("Failed to login")
-                        }
-                    })
+                val response = RetrofitInstance.api.login(LoginRequest(email, password))
+                RetrofitInstance.token = response.token
+                _uiState.update { LoginUiState.Success }
             } catch (e: Exception) {
-                LoginUiState.Error(e.message ?: "An unknown error occurred")
+                _uiState.update { LoginUiState.Error(e.message ?: "An unknown error occurred") }
             }
         }
     }

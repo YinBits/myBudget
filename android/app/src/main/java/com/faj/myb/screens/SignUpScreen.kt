@@ -1,6 +1,8 @@
 package com.faj.myb.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,11 +17,14 @@ import androidx.compose.material.icons.filled.MonetizationOn
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,6 +33,7 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -35,14 +41,36 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.layout.Box
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.faj.myb.viewmodel.RegisterUiState
+import com.faj.myb.viewmodel.SignUpViewModel
 
 @Composable
 fun SignUpScreen(backStack: SnapshotStateList<Any>) {
+
+    val viewModel: SignUpViewModel = viewModel()
+    val uiState by viewModel.uiState.collectAsState()
+
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
+    val context = LocalContext.current
+
+    LaunchedEffect(key1 = uiState) {
+        when (val state = uiState) {
+            is RegisterUiState.Success -> {
+                Toast.makeText(context, "Cadastro realizado com sucesso!", Toast.LENGTH_SHORT).show()
+                backStack.remove(backStack.last())
+            }
+
+            is RegisterUiState.Error -> {
+                Toast.makeText(context, state.message, Toast.LENGTH_SHORT).show()
+            }
+
+            else -> Unit
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -180,18 +208,33 @@ fun SignUpScreen(backStack: SnapshotStateList<Any>) {
                         unfocusedContainerColor = Color.White
                     ),
                     visualTransformation = PasswordVisualTransformation(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    isError = password != confirmPassword
                 )
                 Spacer(modifier = Modifier.height(32.dp))
 
                 Button(
-                    onClick = { /* TODO: handle sign up */ },
+                    onClick = {
+                        if (password == confirmPassword) {
+                            viewModel.register(name, email, password)
+                        } else {
+                            Toast.makeText(context, "As senhas não conferem", Toast.LENGTH_SHORT).show()
+                        }
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp),
-                    shape = RoundedCornerShape(12.dp)
+                    shape = RoundedCornerShape(12.dp),
+                    enabled = uiState != RegisterUiState.Loading
                 ) {
-                    Text(text = "Cadastrar", fontSize = 18.sp)
+                    if (uiState == RegisterUiState.Loading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(30.dp),
+                            color = Color.White
+                        )
+                    } else {
+                        Text(text = "Cadastrar", fontSize = 18.sp)
+                    }
                 }
             }
         }
