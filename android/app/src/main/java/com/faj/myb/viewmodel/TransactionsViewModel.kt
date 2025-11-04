@@ -1,5 +1,6 @@
 package com.faj.myb.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.faj.myb.api.RetrofitInstance
@@ -39,13 +40,14 @@ class TransactionsViewModel : ViewModel() {
                     )
                 }
             } catch (e: Exception) {
+                Log.d("YSGS", e.message.toString())
                 _uiState.update { it.copy(isLoading = false, error = "Falha ao carregar transações") }
             }
         }
     }
 
     private fun List<TransactionResponse>.mapToDomain(): List<Transaction> {
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         return this.map {
             Transaction(
                 name = it.description,
