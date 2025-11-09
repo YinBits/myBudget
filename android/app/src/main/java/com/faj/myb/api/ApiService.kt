@@ -1,16 +1,23 @@
 package com.faj.myb.api
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import com.faj.myb.api.request.LoginRequest
 import com.faj.myb.api.request.SignUpRequest
 import com.faj.myb.api.request.TransactionRequest
+import com.faj.myb.api.response.DashboardResponse
 import com.faj.myb.api.response.LoginResponse
 import com.faj.myb.api.response.TransactionResponse
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Path
+import retrofit2.http.Query
+import java.time.LocalDate
 import java.util.concurrent.TimeUnit
 
 interface ApiService {
@@ -25,10 +32,20 @@ interface ApiService {
 
     @GET("transactions")
     suspend fun getTransactions(): List<TransactionResponse>
+
+    @DELETE("transactions/{id}")
+    suspend fun deleteTransaction(@Path("id") id: Long)
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    @GET("dashboard")
+    suspend fun getDashboard(
+        @Query("year") startDate: String = LocalDate.now().year.toString(),
+        @Query("month") endDate: String = LocalDate.now().month.toString()
+    ): DashboardResponse
 }
 
 object RetrofitInstance {
-    private const val BASE_URL = "http://10.0.2.2:8080/"
+    private const val BASE_URL = "http://10.0.2.2:3001/"
     var token: String? = null
 
     private val client: OkHttpClient = OkHttpClient.Builder()

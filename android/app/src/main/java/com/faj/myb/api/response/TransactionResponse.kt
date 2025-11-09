@@ -1,6 +1,5 @@
 package com.faj.myb.api.response
 
-import com.faj.myb.model.TransactionType
 import com.google.gson.annotations.SerializedName
 import java.math.BigDecimal
 

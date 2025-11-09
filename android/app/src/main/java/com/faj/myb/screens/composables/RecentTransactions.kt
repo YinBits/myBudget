@@ -42,7 +42,9 @@ fun RecentTransactions(transactions: List<Transaction>, backStack: SnapshotState
         Spacer(modifier = Modifier.height(8.dp))
         Column {
             transactions.forEach { transaction ->
-                TransactionItem(transaction = transaction)
+                TransactionItem(transaction = transaction) {
+
+                }
             }
         }
     }

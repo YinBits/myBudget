@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
@@ -22,6 +23,9 @@ fun HomeScreen(backStack: SnapshotStateList<Any>) {
     val viewModel: HomeViewModel = viewModel()
     val uiState by viewModel.uiState.collectAsState()
 
+    LaunchedEffect(Unit) {
+        viewModel.load() }
+    
     HomeContent(
         balance = uiState.balance,
         recentTransactions = uiState.recentTransactions,
@@ -46,5 +50,4 @@ fun HomeContent(
             RecentTransactions(transactions = recentTransactions, backStack = backStack)
         }
     }
-
 }

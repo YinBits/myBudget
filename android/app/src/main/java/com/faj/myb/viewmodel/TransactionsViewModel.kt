@@ -4,9 +4,11 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.faj.myb.api.RetrofitInstance
+import com.faj.myb.api.request.TransactionRequest
 import com.faj.myb.api.response.TransactionResponse
 import com.faj.myb.model.Transaction
 import com.faj.myb.model.TransactionType
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -25,9 +27,7 @@ class TransactionsViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(TransactionsUiState())
     val uiState = _uiState.asStateFlow()
 
-    init {
-        fetchTransactions()
-    }
+    init { fetchTransactions() }
 
     fun fetchTransactions() {
         viewModelScope.launch {
@@ -50,11 +50,34 @@ class TransactionsViewModel : ViewModel() {
         val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         return this.map {
             Transaction(
+                id = it.id,
                 name = it.description,
                 date = dateFormat.parse(it.date) ?: java.util.Date(),
                 value = it.amount.toDouble(),
                 type = TransactionType.valueOf(it.type)
             )
+        }
+    }
+
+    fun addTransaction(data: TransactionRequest?) {
+        viewModelScope.launch {
+            data?.let {
+                _uiState.update { it.copy(isLoading = true, error = null) }
+                async { RetrofitInstance.api.addTransaction(data) }.await()
+                fetchTransactions()
+            }
+        }
+    }
+
+    fun deleteTransaction(id: Long) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            try {
+                async { RetrofitInstance.api.deleteTransaction(id) }.await()
+                fetchTransactions()
+            } catch (e: Throwable) {
+                _uiState.update { it.copy(isLoading = false, error = "Ocorreu um erro") }
+            }
         }
     }
 }
