@@ -52,7 +52,7 @@ public class FinancialReportService {
 
     private List<Transaction> fetchTransactions(Long userId, LocalDate startDate, LocalDate endDate, boolean includeAll) {
         return includeAll
-                ? transactionRepository.findByUserId(userId)
+                ? transactionRepository.findByUserIdAndDateBetween(userId,startDate, endDate)
                 : transactionRepository.findByUserIdAndDateBetween(userId, startDate, endDate);
     }
 

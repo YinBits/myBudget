@@ -1,0 +1,10 @@
+// ...existing code...
+'use client';
+
+export default function Card({ children, className = '' }) {
+  return (
+    <div className={`card ${className}`}>
+      {children}
+    </div>
+  );
+}
