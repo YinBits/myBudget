@@ -28,7 +28,7 @@ class SignUpViewModel : ViewModel() {
                 RetrofitInstance.api.register(request)
                 _uiState.value = RegisterUiState.Success
             } catch (e: Exception) {
-                _uiState.value = RegisterUiState.Error("Falha ao registrar")
+                _uiState.value = RegisterUiState.Error("Falha ao registrar $e")
             }
         }
     }

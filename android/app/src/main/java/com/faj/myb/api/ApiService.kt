@@ -8,6 +8,7 @@ import com.faj.myb.api.request.TransactionRequest
 import com.faj.myb.api.response.DashboardResponse
 import com.faj.myb.api.response.LoginResponse
 import com.faj.myb.api.response.TransactionResponse
+import com.faj.myb.model.FinancialReport
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -42,10 +43,18 @@ interface ApiService {
         @Query("year") startDate: String = LocalDate.now().year.toString(),
         @Query("month") endDate: String = LocalDate.now().month.toString()
     ): DashboardResponse
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    @GET("reports")
+    suspend fun getFinancialReport(
+        @Query("startDate") startDate: String = LocalDate.of(LocalDate.now().year, 1, 1).toString(),
+        @Query("endDate") endDate: String = LocalDate.of(LocalDate.now().year, 12, 31).toString(),
+        @Query("includeAll") includeAll: Boolean = false
+    ): FinancialReport
 }
 
 object RetrofitInstance {
-    private const val BASE_URL = "http://10.0.2.2:3001/"
+    private const val BASE_URL = "http://10.0.2.2:8080/"
     var token: String? = null
 
     private val client: OkHttpClient = OkHttpClient.Builder()

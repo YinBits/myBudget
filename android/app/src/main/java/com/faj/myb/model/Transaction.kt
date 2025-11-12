@@ -9,7 +9,3 @@ data class Transaction(
     val value: Double,
     val type: TransactionType
 )
-
-enum class TransactionType {
-    INCOME, EXPENSE
-}

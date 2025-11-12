@@ -56,6 +56,7 @@ dependencies {
     implementation(libs.converter.gson)
     implementation(libs.okhttp)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.mpandroidchart)
 
     implementation(libs.androidx.navigation3.ui)
     implementation(libs.androidx.navigation3.runtime)

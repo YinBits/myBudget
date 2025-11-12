@@ -13,6 +13,7 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
+import com.faj.myb.screens.FinancialReportScreen
 import com.faj.myb.screens.HomeScreen
 import com.faj.myb.screens.LoginScreen
 import com.faj.myb.screens.SignUpScreen
@@ -26,6 +27,7 @@ data object NavSignUp
 data object NavSplash
 data object NavHome
 data object NavTransactions
+data object NavFinancialReport
 
 class MainActivity : ComponentActivity() {
 
@@ -40,7 +42,7 @@ class MainActivity : ComponentActivity() {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     bottomBar = {
-                        if (backStack.lastOrNull() == NavHome || backStack.lastOrNull() == NavTransactions) {
+                        if (backStack.lastOrNull() == NavHome || backStack.lastOrNull() == NavTransactions || backStack.lastOrNull() == NavFinancialReport) {
                             BottomNavigationBar(backStack = backStack)
                         }
                     }
@@ -56,6 +58,7 @@ class MainActivity : ComponentActivity() {
                                 is NavSignUp -> NavEntry(key) { SignUpScreen(backStack) }
                                 is NavHome -> NavEntry(key) { HomeScreen(backStack) }
                                 is NavTransactions -> NavEntry(key) { TransactionsScreen() }
+                                is NavFinancialReport -> NavEntry(key) { FinancialReportScreen() }
                                 else -> NavEntry(Unit) {
                                     backStack.clear()
                                     backStack.add(NavSplash)
